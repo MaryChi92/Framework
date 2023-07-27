@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %} Our courses {% endblock %}
+
+<body>
+{% block content %}
+<h1>Our Courses</h1>
+<div>
+    <br>
+    {% for category in context.state.categories %}
+    <h3>{{category.name}}</h3>
+        {% for course in category.courses %}
+        <ul>
+            <li>
+                <span>
+                    {{course.name}} {{course.course_type}} {{course.location}}
+                </span>
+                <div>
+                    <a href="/courses/copy_course/?name={{course.name}}">Copy course</a>
+                </div>
+            </li>
+        </ul>
+        {% endfor %}
+
+    <a href="/courses/create_course/?category_id={{category.id}}">Create course</a>
+
+    {% endfor %}
+</div>
+{% endblock %}
+</body>

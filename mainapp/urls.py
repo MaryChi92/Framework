@@ -1,5 +1,6 @@
 from datetime import date
-from mainapp.views import IndexView, PageView, AnotherPageView, ExamplesView, ContactsView
+from mainapp.views import IndexView, AboutView, CreateCourseView, CopyCourseView, CoursesListView, CreateCategoryView,\
+    CategoriesListView, ExamplesView, ContactsView
 
 
 def date_today(context):
@@ -14,8 +15,12 @@ fronts = [date_today, hello_friend]
 
 urls = {
     '/': IndexView(),
-    '/page/': PageView(),
-    '/another_page/': AnotherPageView(),
+    '/about/': AboutView(),
+    '/courses/': CoursesListView(),
+    '/courses/create_course/': CreateCourseView(),
+    '/courses/copy_course/': CopyCourseView(),
+    '/categories/': CategoriesListView(),
+    '/categories/create_category/': CreateCategoryView(),
     '/examples/': ExamplesView(),
     '/contacts/': ContactsView(),
 }
