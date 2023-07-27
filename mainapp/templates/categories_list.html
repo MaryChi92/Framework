@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %} patisserie_club - categories {% endblock %}
+
+<body>
+{% block content %}
+<h1>Categories</h1>
+<ul>
+    {% for category in context.state.categories %}
+    <li>
+        <h4>{{category.name}}</h4>
+        <span>courses: {{category.course_count()}}</span>
+    </li>
+    {% endfor %}
+</ul>
+
+<div>
+    <li><a href="/categories/create_category/">Create category</a></li>
+</div>
+{% endblock %}
+</body>

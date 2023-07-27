@@ -104,11 +104,12 @@ ol li
 { padding-bottom: 40px;}
 
 #header
-{ background: transparent url("/static/images/logo.jpg") no-repeat;}
+{ background: transparent url("/static/images/top.jpg") no-repeat center;}
 
 #logo
 { width: 860px;
   position: relative;
+  align-items: center;
   height: 200px;}
 
 #logo #logo_text 
