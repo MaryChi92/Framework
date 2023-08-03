@@ -2,10 +2,11 @@ from wsgiref.simple_server import make_server
 from whitenoise import WhiteNoise
 
 from framework_config.main import Framework
-from mainapp.urls import urls, fronts
+from mainapp.urls import fronts
+from framework_config.utils import AppRoute
 
 
-app = Framework(urls, fronts)
+app = Framework(AppRoute.routes, fronts)
 app = WhiteNoise(app)
 app.add_files('./static', 'static/')
 
