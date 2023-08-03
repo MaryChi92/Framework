@@ -3,6 +3,7 @@ from http import HTTPStatus
 from framework_config.templator import render
 from mainapp.engine import Engine
 from framework_config.logger import Logger
+from framework_config.utils import AppRoute, debug
 
 engine = Engine()
 logger = Logger(f'{__name__}')
@@ -17,17 +18,21 @@ class TemplateView:
         return f"{HTTPStatus.OK} OK", render(self.template_name, context=request)
 
 
+@AppRoute('/')
 class IndexView(TemplateView):
     pass
 
 
+@AppRoute('/about/')
 class AboutView(TemplateView):
     template_name = "about.html"
 
 
+@AppRoute('/courses/create_course/')
 class CreateCourseView(TemplateView):
     template_name = "create_course.html"
 
+    @debug
     def __call__(self, request):
         if request['method'] == 'POST':
             data = request['params']
@@ -44,6 +49,7 @@ class CreateCourseView(TemplateView):
             return super().__call__(request)
 
 
+@AppRoute('/courses/copy_course/')
 class CopyCourseView(TemplateView):
     template_name = "courses_list.html"
 
@@ -55,10 +61,12 @@ class CopyCourseView(TemplateView):
         return super().__call__(request)
 
 
+@AppRoute('/courses/')
 class CoursesListView(TemplateView):
     template_name = "courses_list.html"
 
 
+@AppRoute('/categories/create_category/')
 class CreateCategoryView(TemplateView):
     template_name = "create_category.html"
 
@@ -74,14 +82,17 @@ class CreateCategoryView(TemplateView):
             return super().__call__(request)
 
 
+@AppRoute('/categories/')
 class CategoriesListView(TemplateView):
     template_name = "categories_list.html"
 
 
+@AppRoute('/examples/')
 class ExamplesView(TemplateView):
     template_name = "examples.html"
 
 
+@AppRoute('/contacts/')
 class ContactsView(TemplateView):
     template_name = "contacts.html"
 
