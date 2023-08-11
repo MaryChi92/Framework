@@ -7,7 +7,7 @@
 <h1>Our Courses</h1>
 <div>
     <br>
-    {% for category in context.state.categories %}
+    {% for category in context.state.categories.values() recursive %}
     <h3>{{category.name}}</h3>
         {% for course in category.courses %}
         <ul>

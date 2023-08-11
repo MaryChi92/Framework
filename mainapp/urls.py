@@ -13,14 +13,4 @@ def hello_friend(context):
 
 fronts = [date_today, hello_friend]
 
-urls = {
-    # '/': IndexView(),
-    # '/about/': AboutView(),
-    # '/courses/': CoursesListView(),
-    # '/courses/create_course/': CreateCourseView(),
-    # '/courses/copy_course/': CopyCourseView(),
-    # '/categories/': CategoriesListView(),
-    # '/categories/create_category/': CreateCategoryView(),
-    # '/examples/': ExamplesView(),
-    # '/contacts/': ContactsView(),
-}
+urls = {}
