@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %} patisserie_club - students {% endblock %}
+
+<body>
+{% block content %}
+<h1>Students</h1>
+
+<div>
+
+    {% for student in context.state.students.values() %}
+     <h3>{{student.username}}</h3>
+      <ul>
+        <li><span>ID:&nbsp;</span> {{student.id}}</li>
+        <li><span>E-mail:&nbsp;</span>{{student.email}}</li>
+      </ul>
+      {% endfor %}
+
+</div>
+{% endblock %}
+</body>

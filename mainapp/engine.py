@@ -4,27 +4,39 @@ from mainapp.models import UserFactory, Category, CourseFactory
 class Engine:
     def __init__(self):
         self.state = {
-            'tutors': [],
-            'students': [],
-            'categories': [],
+            'tutors': {},
+            'students': {},
+            'categories': {},
             'courses': [],
         }
 
-    def create_user(self, user_type):
-        user = UserFactory.create(user_type)
-        self.state[user_type].append(user)
+    def create_user(self, user_type, username, email, password):
+        user = UserFactory.create(user_type, username, email, password)
+        self.state[f'{user_type}s'][user.id] = user
         return user
 
     def create_category(self, name, category=None):
-        category = Category(name, category)
-        self.state['categories'].append(category)
+        new_category = Category(name)
+        if category:
+            category.categories[new_category.id] = new_category
+        else:
+            self.state['categories'][new_category.id] = new_category
         return category
 
-    def find_category_by_id(self, id):
-        for category in self.state['categories']:
-            if category.id == id:
+    def find_category_by_id(self, category_id, categories):
+        for key, category in categories.items():
+            required_category = None
+            if category.id == category_id:
                 return category
-        raise Exception(f'Category {id} not found')
+            if category.categories:
+                try:
+                    required_category = self.find_category_by_id(category_id, category.categories)
+                except Exception:
+                    pass
+            if required_category:
+                return required_category
+        else:
+            raise Exception(f'Category {category_id} not found')
 
     def create_course(self, course_type, name, category, **kwargs):
         course = CourseFactory.create(course_type, name, category, **kwargs)

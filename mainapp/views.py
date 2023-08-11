@@ -1,21 +1,12 @@
 from http import HTTPStatus
 
 from framework_config.templator import render
-from mainapp.engine import Engine
-from framework_config.logger import Logger
 from framework_config.utils import AppRoute, debug
+from framework_config.views import TemplateView, ListView, CreateView, engine, logger
+from framework_config.middleware import SmsNotifier, EmailNotifier
 
-engine = Engine()
-logger = Logger(f'{__name__}')
-
-
-class TemplateView:
-    template_name = "index.html"
-
-    def __call__(self, request):
-        request['state'] = engine.state
-        logger.log(f"request {request['method']} {self.template_name}")
-        return f"{HTTPStatus.OK} OK", render(self.template_name, context=request)
+sms_notifier = SmsNotifier()
+email_notifier = EmailNotifier()
 
 
 @AppRoute('/')
@@ -29,28 +20,22 @@ class AboutView(TemplateView):
 
 
 @AppRoute('/courses/create_course/')
-class CreateCourseView(TemplateView):
+class CreateCourseView(CreateView):
     template_name = "create_course.html"
 
     @debug
-    def __call__(self, request):
-        if request['method'] == 'POST':
-            data = request['params']
-            category = engine.find_category_by_id(int(data['category_id']))
-            try:
-                engine.create_course(category=category, **data)
-            except Exception:
-                return f"{HTTPStatus.BAD_REQUEST} BAD REQUEST", render("courses_list.html", context=request)
-            else:
-                request['state'] = engine.state
-                logger.log(f"request {request['method']} create course {data}")
-            return f"{HTTPStatus.CREATED} CREATED", render("courses_list.html", context=request)
+    def create_object(self, data):
+        category = engine.find_category_by_id(int(data['category_id']), engine.state['categories'])
+        try:
+            course = engine.create_course(category=category, **data)
+        except Exception:
+            return f"{HTTPStatus.BAD_REQUEST} BAD REQUEST", render("courses_list.html")
         else:
-            return super().__call__(request)
+            course.observers.extend((email_notifier, sms_notifier))
 
 
 @AppRoute('/courses/copy_course/')
-class CopyCourseView(TemplateView):
+class CopyCourseView(ListView):
     template_name = "courses_list.html"
 
     def __call__(self, request):
@@ -62,28 +47,28 @@ class CopyCourseView(TemplateView):
 
 
 @AppRoute('/courses/')
-class CoursesListView(TemplateView):
+class CoursesListView(ListView):
     template_name = "courses_list.html"
 
 
 @AppRoute('/categories/create_category/')
-class CreateCategoryView(TemplateView):
+class CreateCategoryView(CreateView):
     template_name = "create_category.html"
 
-    def __call__(self, request):
-        if request['method'] == 'POST':
-            data = request['params']
-            name = data['name']
-            if name:
-                engine.create_category(name)
-            logger.log(f"request {request['method']} create category {data}")
-            return f"{HTTPStatus.CREATED} CREATED", render("index.html", context=request)
+    def create_object(self, data):
+        name = data['name']
+        category_id = data['category_id']
+        if category_id:
+            category_id = int(category_id)
+            category = engine.find_category_by_id(category_id)
         else:
-            return super().__call__(request)
+            category = None
+        if name:
+            engine.create_category(name, category)
 
 
 @AppRoute('/categories/')
-class CategoriesListView(TemplateView):
+class CategoriesListView(ListView):
     template_name = "categories_list.html"
 
 
@@ -101,3 +86,36 @@ class ContactsView(TemplateView):
             message = request['params']
             logger.log(message)
         return super().__call__(request)
+
+
+@AppRoute('/students/')
+class StudentsListView(ListView):
+    template_name = "students_list.html"
+
+
+@AppRoute('/auth/register/')
+class RegisterView(CreateView):
+    template_name = "register.html"
+
+    @debug
+    def create_object(self, data):
+        username = data['username']
+        if username:
+            engine.create_user(data.get('user_type'), username, data.get('email'), data.get('password'))
+
+
+@AppRoute('/signup/')
+class SignupView(CreateView):
+    template_name = 'sign_up_for_course.html'
+
+    def create_object(self, data):
+        course_name = data.get('course')
+        student_id = data.get('student_id')
+        if course_name and student_id:
+            course = engine.get_course_by_name(course_name)
+            student = engine.state['students'][int(student_id)]
+            if student not in course.students:
+                course.add_student(student)
+
+    # def __call__(self, request):
+

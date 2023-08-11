@@ -1,9 +1,17 @@
 from copy import deepcopy
 
+from framework_config.middleware import Subject
+
 
 class User:
-    def __init__(self, username):
+    auto_id = 0
+
+    def __init__(self, username, email, password):
+        self.id = User.auto_id
+        User.auto_id += 1
         self.username = username
+        self.email = email
+        self.password = password
 
 
 class Tutor(User):
@@ -11,7 +19,9 @@ class Tutor(User):
 
 
 class Student(User):
-    pass
+    def __init__(self, username, email, password):
+        super().__init__(username, email, password)
+        self.courses = []
 
 
 class UserFactory:
@@ -21,21 +31,31 @@ class UserFactory:
     }
 
     @classmethod
-    def create(cls, user_type):
-        return cls.user_types[user_type]
+    def create(cls, user_type, username, email, password):
+        return cls.user_types[user_type](username, email, password)
 
 
-class Course:
+class Course(Subject):
     def __init__(self, name, category):
+        super().__init__()
         self.name = name
+        self.students = []
         self.category = category
         self.category.courses.append(self)
+
+    def __iter__(self):
+        for student in self.students:
+            yield student
 
     def clone(self):
         course = deepcopy(self)
         course.name = f'{self.name}_copy'
         self.category.courses.append(course)
         return course
+
+    def add_student(self, student):
+        self.students.append(student)
+        self.notify()
 
 
 class InteractiveCourse(Course):
@@ -71,16 +91,24 @@ class CourseFactory:
 class Category:
     auto_id = 0
 
-    def __init__(self, name, category):
+    def __init__(self, name):
         self.id = Category.auto_id
         Category.auto_id += 1
         self.name = name
-        self.category = category
+        self.categories = {}
         self.courses = []
+
+    def __iter__(self):
+        for course in self.courses:
+            yield course
+
+    def __repr__(self):
+        return f'Category {self.name}'
 
     def course_count(self):
         result = len(self.courses)
-        if self.category:
-            result += self.category.course_count()
+        if self.categories:
+            for category in self.categories.values():
+                result += category.course_count()
         return result
 
