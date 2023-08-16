@@ -11,7 +11,7 @@ class Engine:
         }
 
     def create_user(self, user_type, username, email, password):
-        user = UserFactory.create(user_type, username, email, password)
+        user = UserFactory.create_obj(user_type, username, email, password)
         self.state[f'{user_type}s'][user.id] = user
         return user
 
@@ -48,3 +48,11 @@ class Engine:
             if course.name == name:
                 return course
         return None
+
+    def get_courses(self, categories):
+        courses_list = []
+        for category in categories.values():
+            courses_list.extend(category.courses)
+            if category.categories:
+                courses_list.extend(self.get_courses(category.categories))
+        return courses_list

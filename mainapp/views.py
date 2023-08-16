@@ -3,10 +3,14 @@ from http import HTTPStatus
 from framework_config.templator import render
 from framework_config.utils import AppRoute, debug
 from framework_config.views import TemplateView, ListView, CreateView, engine, logger
-from framework_config.middleware import SmsNotifier, EmailNotifier
+from framework_config.middleware import SmsNotifier, EmailNotifier, MapperRegistry
+from database.main import Session
+from mainapp.models import Student, User
 
 sms_notifier = SmsNotifier()
 email_notifier = EmailNotifier()
+Session.new_current()
+Session.get_current().register_mappers(MapperRegistry)
 
 
 @AppRoute('/')
@@ -92,6 +96,12 @@ class ContactsView(TemplateView):
 class StudentsListView(ListView):
     template_name = "students_list.html"
 
+    def get_context(self, request):
+        students = Session.get_current().get_mapper(Student).all()
+        for student in students:
+            engine.state['students'][student.id] = student
+        request['state'] = engine.state
+
 
 @AppRoute('/auth/register/')
 class RegisterView(CreateView):
@@ -99,14 +109,22 @@ class RegisterView(CreateView):
 
     @debug
     def create_object(self, data):
-        username = data['username']
+        username = data.get('username')
         if username:
-            engine.create_user(data.get('user_type'), username, data.get('email'), data.get('password'))
+            student = engine.create_user(data.get('user_type'), username, data.get('email'), data.get('password'))
+            student.create()
+            Session.get_current().commit()
 
 
 @AppRoute('/signup/')
 class SignupView(CreateView):
     template_name = 'sign_up_for_course.html'
+
+    def get_context(self, request):
+        super().get_context(request)
+        students = Session.get_current().get_mapper(Student).all()
+        for student in students:
+            engine.state['students'][student.id] = student
 
     def create_object(self, data):
         course_name = data.get('course')
@@ -117,5 +135,10 @@ class SignupView(CreateView):
             if student not in course.students:
                 course.add_student(student)
 
-    # def __call__(self, request):
-
+    def __call__(self, request):
+        if request['method'] == 'POST':
+            data = self.get_request_data(request)
+            self.create_object(data)
+            return f'{HTTPStatus.CREATED} CREATED', render('index.html', context=request)
+        request['courses'] = engine.get_courses(engine.state['categories'])
+        return super().__call__(request)
