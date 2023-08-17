@@ -18,7 +18,7 @@ class UserMapper(BaseRegisteredClass):
         result = []
         for row in self.cursor.fetchall():
             id, usertype, username, email, password = row
-            user = UserFactory.create_obj(usertype, username, email, password)
+            user = UserFactory.create_obj(usertype, username, email, password, id)
             result.append(user)
         return result
 
@@ -89,8 +89,8 @@ class UserFactory(Objects):
     }
 
     @classmethod
-    def create_obj(cls, user_type, username, email, password):
-        return cls.user_types[user_type](username, email, password)
+    def create_obj(cls, user_type, username, email, password, id=None):
+        return cls.user_types[user_type](username, email, password, id)
 
 
 class Course(Subject):
