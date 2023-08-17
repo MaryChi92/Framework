@@ -97,7 +97,7 @@ class StudentsListView(ListView):
     template_name = "students_list.html"
 
     def get_context(self, request):
-        students = Session.get_current().get_mapper(Student).all()
+        students = Session.get_current().get_mapper(Student).select_all()
         for student in students:
             engine.state['students'][student.id] = student
         request['state'] = engine.state
@@ -122,7 +122,7 @@ class SignupView(CreateView):
 
     def get_context(self, request):
         super().get_context(request)
-        students = Session.get_current().get_mapper(Student).all()
+        students = Session.get_current().get_mapper(Student).select_all()
         for student in students:
             engine.state['students'][student.id] = student
 

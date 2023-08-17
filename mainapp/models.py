@@ -18,7 +18,7 @@ class UserMapper(BaseRegisteredClass):
         result = []
         for row in self.cursor.fetchall():
             id, usertype, username, email, password = row
-            user = UserFactory.create(usertype, username, email, password, id)
+            user = UserFactory.create_obj(usertype, username, email, password)
             result.append(user)
         return result
 
@@ -59,7 +59,7 @@ class UserMapper(BaseRegisteredClass):
 
 class User(Objects):
     mapper = 'UserMapper'
-    auto_id = 0
+    auto_id = 1
 
     def __init__(self, username, email, password, id=None):
         if not id:

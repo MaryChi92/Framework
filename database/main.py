@@ -49,7 +49,7 @@ class Session:
     @classmethod
     def new_current(cls):
         cls.current.session = Session()
-        cls.current.session.connection = Connection("db.sqlite3")
+        cls.current.session.connection = Connection("database/db.sqlite3")
 
     @classmethod
     def get_current(cls):
