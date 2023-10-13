@@ -24,3 +24,20 @@ class SmsNotifier(Observer):
 class EmailNotifier(Observer):
     def update(self, subject):
         print(f"E-mail -> {subject.students[-1].username} has joined the course {subject.name}")
+
+
+class MapperRegistry(type):
+    REGISTRY = {}
+
+    def __new__(cls, name, bases, attrs):
+        new_cls = type.__new__(cls, name, bases, attrs)
+        cls.REGISTRY[new_cls.__name__] = new_cls
+        return new_cls
+
+    @classmethod
+    def get_registry(cls):
+        return dict(cls.REGISTRY)
+
+
+class BaseRegisteredClass(metaclass=MapperRegistry):
+    pass

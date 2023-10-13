@@ -1,5 +1,6 @@
 from framework_config.handlers import params_handlers
 
+
 class PageNotFound404:
     def __call__(self, request):
         return '404 NOT FOUND', '404 Page Not Found'
